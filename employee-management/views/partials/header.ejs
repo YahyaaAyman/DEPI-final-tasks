@@ -1,0 +1,8 @@
+<header class="pb-3 mb-4 border-bottom">
+  <div class="d-flex justify-content-between align-items-center">
+    <h1 class="display-5 fw-bold"><%= title %></h1>
+    <% if (title !== 'Add New Employee') { %>
+      <a href="/employees/new" class="btn btn-primary">Add Employee</a>
+    <% } %>
+  </div>
+</header>
