@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>User Manager</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body class="bg-light">
+
+<div class="container mt-5">
+  <h2 class="mb-4">User Management System</h2>
+
+  <form id="userForm" class="mb-4">
+    <div class="row g-2">
+      <div class="col-md-4">
+        <input type="text" id="name" class="form-control" placeholder="Name" required />
+      </div>
+      <div class="col-md-4">
+        <input type="email" id="email" class="form-control" placeholder="Email" required />
+      </div>
+      <div class="col-md-4">
+        <button type="submit" class="btn btn-primary w-100">Add User</button>
+      </div>
+    </div>
+  </form>
+
+  <table class="table table-bordered table-hover">
+    <thead class="table-dark">
+      <tr>
+        <th>ID</th>
+        <th>Name</th>
+        <th>Email</th>
+        <th style="width: 150px">Actions</th>
+      </tr>
+    </thead>
+    <tbody id="userTableBody">
+      <!-- Users will be rendered here -->
+    </tbody>
+  </table>
+</div>
+
+<script>
+  class User {
+    constructor(id, name, email) {
+      this.id = id;
+      this.name = name;
+      this.email = email;
+    }
+  }
+
+  class UserManager {
+    constructor() {
+      this.users = [];
+      this.nextId = 1;
+    }
+
+    createUser(name, email) {
+      const user = new User(this.nextId++, name, email);
+      this.users.push(user);
+      return user;
+    }
+
+    readUsers() {
+      return this.users;
+    }
+
+    updateUser(id, newName, newEmail) {
+      const user = this.users.find(u => u.id === id);
+      if (user) {
+        user.name = newName;
+        user.email = newEmail;
+      }
+    }
+
+    deleteUser(id) {
+      this.users = this.users.filter(u => u.id !== id);
+    }
+
+    getUser(id) {
+      return this.users.find(u => u.id === id);
+    }
+  }
+
+  const manager = new UserManager();
+  const userForm = document.getElementById("userForm");
+  const nameInput = document.getElementById("name");
+  const emailInput = document.getElementById("email");
+  const userTableBody = document.getElementById("userTableBody");
+
+  let editMode = false;
+  let editingUserId = null;
+
+  userForm.addEventListener("submit", function (e) {
+    e.preventDefault();
+
+    const name = nameInput.value.trim();
+    const email = emailInput.value.trim();
+
+    if (!name || !email) return;
+
+    if (editMode) {
+      manager.updateUser(editingUserId, name, email);
+      editMode = false;
+      editingUserId = null;
+      userForm.querySelector("button").textContent = "Add User";
+    } else {
+      manager.createUser(name, email);
+    }
+
+    nameInput.value = "";
+    emailInput.value = "";
+
+    renderUsers();
+  });
+
+  function renderUsers() {
+    userTableBody.innerHTML = "";
+    const users = manager.readUsers();
+    users.forEach(user => {
+      const row = document.createElement("tr");
+
+      row.innerHTML = `
+        <td>${user.id}</td>
+        <td>${user.name}</td>
+        <td>${user.email}</td>
+        <td>
+          <button class="btn btn-sm btn-warning me-1" onclick="editUser(${user.id})">Edit</button>
+          <button class="btn btn-sm btn-danger" onclick="deleteUser(${user.id})">Delete</button>
+        </td>
+      `;
+
+      userTableBody.appendChild(row);
+    });
+  }
+
+  window.editUser = function (id) {
+    const user = manager.getUser(id);
+    if (user) {
+      nameInput.value = user.name;
+      emailInput.value = user.email;
+      editMode = true;
+      editingUserId = id;
+      userForm.querySelector("button").textContent = "Update User";
+    }
+  };
+
+  window.deleteUser = function (id) {
+    manager.deleteUser(id);
+    renderUsers();
+  };
+</script>
+
+</body>
+</html>
